@@ -10,5 +10,5 @@ On va faire un jeu de combat en 2D ou des professeurs se battent entre eux, pour
 - [ ] Coder le jeu / **Maxime et Rémy**
 - [ ] Faire les hitboxs / **Maxime**
 - [ ] Créer une histoire / **Rémy et Kylian**
-- [ ] Choisir des musiques pour le jeu / **Rémy et Océane**
+- [x] Choisir des musiques pour le jeu / **Rémy et Océane**
 - [ ] Faire la vidéo de présentation du jeu / **Kylian**
