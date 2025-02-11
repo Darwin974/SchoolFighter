@@ -5,7 +5,7 @@ import os
 pygame.init()
 
 # Set up l'affichage
-screen = pygame.display.set_mode((256, 256))
+screen = pygame.display.set_mode((650, 650))
 pygame.display.set_caption("Animation Shrauder Test")
 
 clock = pygame.time.Clock()
@@ -16,6 +16,7 @@ sprite_folder = 'img/IPI_Shrauder'
 for file in sorted(os.listdir(sprite_folder)):
     if file.endswith('.png'):
         image = pygame.image.load(os.path.join(sprite_folder, file))
+        image = pygame.transform.scale(image, (650, 650))  # Redimensionner l'image
         sprite_images.append(image)
 
 # Variables d'animation
