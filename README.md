@@ -4,4 +4,4 @@
 #### Roadmap :
 - [ ] Faire un menu
 - [ ] Faire un niveau
-- [ ] Insérer les animations de RemLittle
+- [x] Insérer les animations de RemLittle
