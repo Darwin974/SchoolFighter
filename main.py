@@ -4,51 +4,80 @@ import os
 
 pygame.init()
 
-# Set up l'affichage
-screen = pygame.display.set_mode((650, 650))
-pygame.display.set_caption("Animation Shrauder Test")
+# Configurer l'affichage
+ecran = pygame.display.set_mode((700, 700))
+pygame.display.set_caption("Test d'Animation")
 
-clock = pygame.time.Clock()
+horloge = pygame.time.Clock()
 
-# Charger les images du sprite
-sprite_images = []
-sprite_folder = 'img/IPI_Shrauder'
-for file in sorted(os.listdir(sprite_folder)):
-    if file.endswith('.png'):
-        image = pygame.image.load(os.path.join(sprite_folder, file))
-        image = pygame.transform.scale(image, (650, 650))  # Redimensionner l'image
-        sprite_images.append(image)
+class AnimationSprite:
+    def __init__(self, dossier, taille):
+        self.images = self.charger_images(dossier, taille)
+        self.sprite_actuel = 0
+        self.vitesse_sprite = 0.2
+        self.animation_finie = False
 
-# Variables d'animation
-current_sprite = 0
-sprite_x = 0
-sprite_y = 0
-sprite_speed = 0.2
-animation_finie = False
+    def charger_images(self, dossier, taille):
+        """Charger et redimensionner les images des sprites depuis un dossier."""
+        images = []
+        for fichier in sorted(os.listdir(dossier)):
+            if fichier.endswith('.png'):
+                image = pygame.image.load(os.path.join(dossier, fichier))
+                image = pygame.transform.scale(image, taille)  # Redimensionner l'image
+                images.append(image)
+        return images
 
-# Main game loop
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    def mettre_a_jour(self):
+        """Mettre à jour le sprite actuel si l'animation n'est pas finie."""
+        if not self.animation_finie:
+            self.sprite_actuel += self.vitesse_sprite
+            if self.sprite_actuel >= len(self.images):
+                self.sprite_actuel = len(self.images) - 1
+                self.animation_finie = True
+
+    def dessiner(self, surface, x, y):
+        """Dessiner le sprite actuel sur la surface donnée."""
+        surface.blit(self.images[int(self.sprite_actuel)], (x, y))
+
+# Charger les animations des sprites
+animations = [
+    AnimationSprite('img/IPI_fight', (700, 700)),
+    AnimationSprite('img/IPI_Shrauder', (700, 700)),
+    AnimationSprite('img/IPI_Basic', (700, 700)),
+    AnimationSprite('img/IPI_attaque', (700, 700)),
+]
+
+index_animation_actuelle = 0
+toutes_animations_finies = False
+
+# Boucle principale du jeu
+en_cours = True
+while en_cours:
+    for evenement in pygame.event.get():
+        if evenement.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-    # Update le sprite actuel si l'animation n'est pas finie
-    if not animation_finie:
-        current_sprite += sprite_speed
-        if current_sprite >= len(sprite_images):
-            current_sprite = len(sprite_images) - 1
-            animation_finie = True
+    if not toutes_animations_finies:
+        # Mettre à jour l'animation actuelle
+        animation_actuelle = animations[index_animation_actuelle]
+        animation_actuelle.mettre_a_jour()
 
-    # Couleur de l'écran
-    screen.fill((0, 0, 0))  # Noir
+        # Vérifier si l'animation actuelle est finie et passer à la suivante
+        if animation_actuelle.animation_finie:
+            index_animation_actuelle += 1
+            if index_animation_actuelle >= len(animations):
+                toutes_animations_finies = True
 
-    # Dessine le sprite actuel
-    screen.blit(sprite_images[int(current_sprite)], (sprite_x, sprite_y))
+        # Dessiner l'animation actuelle
+        ecran.fill((0, 0, 0))  # Remplir l'écran de noir avant de dessiner
+        animation_actuelle.dessiner(ecran, 0, 0)
+    else:
+        # Remplir l'écran de noir si toutes les animations sont finies
+        ecran.fill((0, 0, 0))
 
-    # Update l'affichage
+    # Mettre à jour l'affichage
     pygame.display.flip()
 
-    # FPS
-    clock.tick(60)
+    # Limiter la fréquence d'images par seconde
+    horloge.tick(60)
