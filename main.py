@@ -10,10 +10,39 @@ pygame.display.set_caption("School Fighter")
 
 horloge = pygame.time.Clock()
 
+class AnimationLoop:
+    def __init__(self, dossier, taille, x, y):
+        self.images = self.charger_images(dossier, taille)
+        self.sprite_actuel = 0
+        self.vitesse_sprite = 0.2
+        self.x = x
+        self.y = y
+
+    def charger_images(self, dossier, taille):
+        images = []
+        for fichier in sorted(os.listdir(dossier)):
+            if fichier.endswith('.png'):
+                image = pygame.image.load(os.path.join(dossier, fichier))
+                image = pygame.transform.scale(image, taille)
+                images.append(image)
+        return images
+
+    def mettre_a_jour(self):
+        self.sprite_actuel += self.vitesse_sprite
+        if self.sprite_actuel >= len(self.images):
+            self.sprite_actuel = 0  # Boucle l'animation
+
+    def dessiner(self, surface):
+        surface.blit(self.images[int(self.sprite_actuel)], (self.x, self.y))
+
 class EcranMenu:
     def __init__(self):
         self.font = pygame.font.Font(None, 74)
         self.text = self.font.render('Menu Principal', True, (255, 255, 255))
+        # Positionner le logo au centre de la fenêtre
+        logo_x = (700 - 640) // 2
+        logo_y = (700 - 426) // 2
+        self.logo_animation = AnimationLoop('img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
 
     def gerer_evenements(self, evenement):
         if evenement.type == pygame.KEYDOWN:
@@ -22,11 +51,12 @@ class EcranMenu:
         return 'menu'
 
     def mettre_a_jour(self):
-        pass
+        self.logo_animation.mettre_a_jour()
 
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
         surface.blit(self.text, (150, 300))
+        self.logo_animation.dessiner(surface)
 
 class EcranJeu:
     def __init__(self):
