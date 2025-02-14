@@ -10,22 +10,33 @@ pygame.display.set_caption("School Fighter")
 
 horloge = pygame.time.Clock()
 
-class AnimationLoop:
-    def __init__(self, dossier, taille, x, y):
-        self.images = self.charger_images(dossier, taille)
-        self.sprite_actuel = 0
-        self.vitesse_sprite = 0.2
-        self.x = x
-        self.y = y
+class ImageLoader:
+    def __init__(self):
+        self.images_cache = {}
 
     def charger_images(self, dossier, taille):
+        if dossier in self.images_cache:
+            return self.images_cache[dossier]
+
         images = []
         for fichier in sorted(os.listdir(dossier)):
             if fichier.endswith('.png'):
                 image = pygame.image.load(os.path.join(dossier, fichier))
                 image = pygame.transform.scale(image, taille)
                 images.append(image)
+        self.images_cache[dossier] = images
         return images
+
+# Initialiser le chargeur d'images
+image_loader = ImageLoader()
+
+class AnimationLoop:
+    def __init__(self, image_loader, dossier, taille, x, y):
+        self.images = image_loader.charger_images(dossier, taille)
+        self.sprite_actuel = 0
+        self.vitesse_sprite = 0.2
+        self.x = x
+        self.y = y
 
     def mettre_a_jour(self):
         self.sprite_actuel += self.vitesse_sprite
@@ -42,7 +53,7 @@ class EcranMenu:
         # Positionner le logo au centre de la fenêtre
         logo_x = (700 - 640) // 2
         logo_y = (700 - 426) // 2
-        self.logo_animation = AnimationLoop('img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
+        self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
 
     def gerer_evenements(self, evenement):
         if evenement.type == pygame.KEYDOWN:
@@ -61,10 +72,10 @@ class EcranMenu:
 class EcranJeu:
     def __init__(self):
         self.animations = [
-            AnimationSprite('img/IPI_fight', (700, 700)),
-            AnimationSprite('img/IPI_Shrauder', (700, 700)),
-            AnimationSprite('img/IPI_Basic', (700, 700)),
-            AnimationSprite('img/IPI_attaque', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI_fight', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI_Shrauder', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI_Basic', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI_attaque', (700, 700)),
         ]
         self.index_animation_actuelle = 0
         self.toutes_animations_finies = False
@@ -91,20 +102,11 @@ class EcranJeu:
             animation_actuelle.dessiner(surface, 0, 0)
 
 class AnimationSprite:
-    def __init__(self, dossier, taille):
-        self.images = self.charger_images(dossier, taille)
+    def __init__(self, image_loader, dossier, taille):
+        self.images = image_loader.charger_images(dossier, taille)
         self.sprite_actuel = 0
         self.vitesse_sprite = 0.2
         self.animation_finie = False
-
-    def charger_images(self, dossier, taille):
-        images = []
-        for fichier in sorted(os.listdir(dossier)):
-            if fichier.endswith('.png'):
-                image = pygame.image.load(os.path.join(dossier, fichier))
-                image = pygame.transform.scale(image, taille)
-                images.append(image)
-        return images
 
     def mettre_a_jour(self):
         if not self.animation_finie:
