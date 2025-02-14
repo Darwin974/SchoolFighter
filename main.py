@@ -54,6 +54,8 @@ class EcranMenu:
         logo_x = (700 - 640) // 2
         logo_y = (700 - 426) // 2
         self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
+        # Ajouter une animation de fond
+        self.fond_animation = AnimationLoop(image_loader, 'img/IPI_TerrainSchrauder', (700, 700), 0, 0)  # Chemin, taille et position du fond
 
     def gerer_evenements(self, evenement):
         if evenement.type == pygame.KEYDOWN:
@@ -63,9 +65,11 @@ class EcranMenu:
 
     def mettre_a_jour(self):
         self.logo_animation.mettre_a_jour()
+        self.fond_animation.mettre_a_jour()
 
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
+        self.fond_animation.dessiner(surface)  # Dessiner le fond animé
         surface.blit(self.text, (150, 300))
         self.logo_animation.dessiner(surface)
 
