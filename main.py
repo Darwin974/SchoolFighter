@@ -65,38 +65,30 @@ class AnimationSprite:
 
 # NAVIGATION BUTTON CLASS
 class Button():
-    def __init__(self, x, y, sx, sy, file):
-        self.f = file
-		# ORIGIN_X COORDINATE OF BUTTON
+    def __init__(self, x, y, sx, sy, file, target_screen):
+        self.file = file
         self.x = x
-		# ORIGIN_Y COORDINATE OF BUTTON
         self.y = y
-		# LAST_X COORDINATE OF BUTTON
         self.sx = sx
-        # LAST_Y COORDINATE OF BUTTON
         self.sy = sy
-		# CURRENT IS OFF
         self.CurrentState = False
+        self.target_screen = target_screen
+        self.animation = AnimationLoop(image_loader, self.file, (self.sx, self.sy), self.x, self.y)
 
-	# DRAW THE BUTTON ON THE SCREEN
+    # DRAW THE BUTTON ON THE SCREEN
     def showButton(self, display):
-        if(self.CurrentState):
-            AnimationLoop(image_loader, self.file, (400, 400), self.x, self.y)
+        self.animation.dessiner(display)
 
-	# THIS FUNCTION CAPTURE WHETHER ANY MOUSE EVENT OCCUR ON THE BUTTON
+    # THIS FUNCTION CAPTURE WHETHER ANY MOUSE EVENT OCCUR ON THE BUTTON
     def focusCheck(self, mousepos, mouseclick):
-    	if(mousepos[0] >= self.x and mousepos[0]
-			<= self.x + self.sx and mousepos[1] >= self.y
-				and mousepos[1] <= self.y + self.sy):
+        if (self.x <= mousepos[0] <= self.x + self.sx and
+            self.y <= mousepos[1] <= self.y + self.sy):
             self.CurrentState = True
-			# IF MOUSE BUTTON CLICK THEN 
-			# NAVIGATE TO THE NEXT OR PREVIOUS TABS
-            return mouseclick[0]
-
+            if mouseclick[0]:
+                return self.target_screen
         else:
-			# ELSE LET THE CURRENT STATE TO BE OFF
             self.CurrentState = False
-            return False
+        return None
 
 class EcranMenu:
     def __init__(self):
@@ -107,34 +99,39 @@ class EcranMenu:
         self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
         # Ajouter une animation de fond
         self.fond_animation = AnimationLoop(image_loader, 'img/IPI_TerrainSchrauder', (700, 700), 0, 0)  # Chemin, taille et position du fond
+        self.buttons = [
+            Button(250, 425, 200, 100, 'img/IPI attaque katana', 'jeu')
+        ]
 
     def gerer_evenements(self, evenement):
-        if evenement.type == pygame.KEYDOWN:
-            if evenement.key == pygame.K_RETURN:
-                return 'jeu'  # Passer à l'écran de jeu
+        if evenement.type == pygame.MOUSEBUTTONDOWN:
+            mousepos = pygame.mouse.get_pos()
+            mouseclick = pygame.mouse.get_pressed()
+            for button in self.buttons:
+                target_screen = button.focusCheck(mousepos, mouseclick)
+                if target_screen:
+                    return target_screen
         return 'menu'
 
     def mettre_a_jour(self):
         self.logo_animation.mettre_a_jour()
         self.fond_animation.mettre_a_jour()
+        for button in self.buttons:
+            button.animation.mettre_a_jour()
 
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
         self.fond_animation.dessiner(surface)  # Dessiner le fond animé
         self.logo_animation.dessiner(surface)
+        for button in self.buttons:
+            button.showButton(surface)
 
 class EcranJeu:
     def __init__(self):
-        self.animations = [
-            AnimationSprite(image_loader, 'img/IPI_fight', (700, 700)),
-            AnimationSprite(image_loader, 'img/IPI_Shrauder', (700, 700)),
-            AnimationSprite(image_loader, 'img/IPI_Basic', (700, 700)),
-            AnimationSprite(image_loader, 'img/IPI_attaque', (700, 700)),
-            AnimationSprite(image_loader, 'img/IPI Basic Katana', (700, 700)),
-            AnimationSprite(image_loader, 'img/IPI attaque katana', (700, 700)),
-        ]
-        self.index_animation_actuelle = 0
-        self.toutes_animations_finies = False
+        self.fond_animation = AnimationLoop(image_loader, 'img/IPI_fond_chill', (700, 700), 0, 0)
+        self.debut_combat_animation = AnimationSprite(image_loader, 'img/IPI_fight', (700, 700))
+        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), -10, 125)
+        self.debut_combat_termine = False
 
     def gerer_evenements(self, evenement):
         if evenement.type == pygame.KEYDOWN:
@@ -143,19 +140,21 @@ class EcranJeu:
         return 'jeu'
 
     def mettre_a_jour(self):
-        if not self.toutes_animations_finies:
-            animation_actuelle = self.animations[self.index_animation_actuelle]
-            animation_actuelle.mettre_a_jour()
-            if animation_actuelle.animation_finie:
-                self.index_animation_actuelle += 1
-                if self.index_animation_actuelle >= len(self.animations):
-                    self.toutes_animations_finies = True
+        self.fond_animation.mettre_a_jour()
+        if not self.debut_combat_termine:
+            self.debut_combat_animation.mettre_a_jour()
+            if self.debut_combat_animation.animation_finie:
+                self.debut_combat_termine = True
+        else:
+            self.joueur_animation.mettre_a_jour()
 
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
-        if not self.toutes_animations_finies:
-            animation_actuelle = self.animations[self.index_animation_actuelle]
-            animation_actuelle.dessiner(surface, 0, 0)
+        self.fond_animation.dessiner(surface)
+        if not self.debut_combat_termine:
+            self.debut_combat_animation.dessiner(surface, 0, 0)
+        else:
+            self.joueur_animation.dessiner(surface)
 
 # Initialiser les écrans
 ecrans = {
