@@ -46,10 +46,61 @@ class AnimationLoop:
     def dessiner(self, surface):
         surface.blit(self.images[int(self.sprite_actuel)], (self.x, self.y))
 
+class AnimationSprite:
+    def __init__(self, image_loader, dossier, taille):
+        self.images = image_loader.charger_images(dossier, taille)
+        self.sprite_actuel = 0
+        self.vitesse_sprite = 0.2
+        self.animation_finie = False
+
+    def mettre_a_jour(self):
+        if not self.animation_finie:
+            self.sprite_actuel += self.vitesse_sprite
+            if self.sprite_actuel >= len(self.images):
+                self.sprite_actuel = len(self.images) - 1
+                self.animation_finie = True
+
+    def dessiner(self, surface, x, y):
+        surface.blit(self.images[int(self.sprite_actuel)], (x, y))
+
+# NAVIGATION BUTTON CLASS
+class Button():
+    def __init__(self, x, y, sx, sy, file):
+        self.f = file
+		# ORIGIN_X COORDINATE OF BUTTON
+        self.x = x
+		# ORIGIN_Y COORDINATE OF BUTTON
+        self.y = y
+		# LAST_X COORDINATE OF BUTTON
+        self.sx = sx
+        # LAST_Y COORDINATE OF BUTTON
+        self.sy = sy
+		# CURRENT IS OFF
+        self.CurrentState = False
+
+	# DRAW THE BUTTON ON THE SCREEN
+    def showButton(self, display):
+        if(self.CurrentState):
+            AnimationLoop(image_loader, self.file, (400, 400), self.x, self.y)
+
+	# THIS FUNCTION CAPTURE WHETHER ANY MOUSE EVENT OCCUR ON THE BUTTON
+    def focusCheck(self, mousepos, mouseclick):
+    	if(mousepos[0] >= self.x and mousepos[0]
+			<= self.x + self.sx and mousepos[1] >= self.y
+				and mousepos[1] <= self.y + self.sy):
+            self.CurrentState = True
+			# IF MOUSE BUTTON CLICK THEN 
+			# NAVIGATE TO THE NEXT OR PREVIOUS TABS
+            return mouseclick[0]
+
+        else:
+			# ELSE LET THE CURRENT STATE TO BE OFF
+            self.CurrentState = False
+            return False
+
 class EcranMenu:
     def __init__(self):
         self.font = pygame.font.Font(None, 74)
-        self.text = self.font.render('Menu Principal', True, (255, 255, 255))
         # Positionner le logo au centre de la fenêtre
         logo_x = (700 - 640) // 2
         logo_y = (700 - 426) // 2
@@ -70,7 +121,6 @@ class EcranMenu:
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
         self.fond_animation.dessiner(surface)  # Dessiner le fond animé
-        surface.blit(self.text, (150, 300))
         self.logo_animation.dessiner(surface)
 
 class EcranJeu:
@@ -80,6 +130,8 @@ class EcranJeu:
             AnimationSprite(image_loader, 'img/IPI_Shrauder', (700, 700)),
             AnimationSprite(image_loader, 'img/IPI_Basic', (700, 700)),
             AnimationSprite(image_loader, 'img/IPI_attaque', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI Basic Katana', (700, 700)),
+            AnimationSprite(image_loader, 'img/IPI attaque katana', (700, 700)),
         ]
         self.index_animation_actuelle = 0
         self.toutes_animations_finies = False
@@ -104,23 +156,6 @@ class EcranJeu:
         if not self.toutes_animations_finies:
             animation_actuelle = self.animations[self.index_animation_actuelle]
             animation_actuelle.dessiner(surface, 0, 0)
-
-class AnimationSprite:
-    def __init__(self, image_loader, dossier, taille):
-        self.images = image_loader.charger_images(dossier, taille)
-        self.sprite_actuel = 0
-        self.vitesse_sprite = 0.2
-        self.animation_finie = False
-
-    def mettre_a_jour(self):
-        if not self.animation_finie:
-            self.sprite_actuel += self.vitesse_sprite
-            if self.sprite_actuel >= len(self.images):
-                self.sprite_actuel = len(self.images) - 1
-                self.animation_finie = True
-
-    def dessiner(self, surface, x, y):
-        surface.blit(self.images[int(self.sprite_actuel)], (x, y))
 
 # Initialiser les écrans
 ecrans = {
