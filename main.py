@@ -85,6 +85,9 @@ class Button():
             self.y <= mousepos[1] <= self.y + self.sy):
             self.CurrentState = True
             if mouseclick[0]:
+                if self.target_screen == 'exit':
+                    pygame.quit()
+                    sys.exit()
                 return self.target_screen
         else:
             self.CurrentState = False
@@ -96,11 +99,12 @@ class EcranMenu:
         # Positionner le logo au centre de la fenêtre
         logo_x = (700 - 640) // 2
         logo_y = (700 - 426) // 2
-        self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 426), logo_x, logo_y)  # Chemin, taille et position du logo
+        self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 420), logo_x, logo_y)  # Chemin, taille et position du logo
         # Ajouter une animation de fond
         self.fond_animation = AnimationLoop(image_loader, 'img/IPI_TerrainSchrauder', (700, 700), 0, 0)  # Chemin, taille et position du fond
         self.buttons = [
-            Button(250, 425, 200, 100, 'img/IPI attaque katana', 'jeu')
+            Button(250, 435, 200, 100, 'img/IPI start', 'jeu'),
+            Button(250, 535, 200, 100, 'img/IPI quit', 'exit')
         ]
 
     def gerer_evenements(self, evenement):
