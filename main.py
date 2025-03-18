@@ -76,6 +76,12 @@ class AnimationLoop:
             if self.animation_temporaire_duree <= 0:
                 self.animation_temporaire = None
 
+        # Réapparaître de l'autre côté de l'écran
+        if self.x < -self.taille[0]:
+            self.x = 700 - self.taille[0] / 2
+        elif self.x > 700:
+            self.x = -self.taille[0] / 2
+
     def dessiner(self, surface):
         if self.animation_temporaire:
             image = self.animation_temporaire[int(self.sprite_actuel)]
@@ -178,18 +184,27 @@ class CombatSystem:
         self.combat_termine = False
 
     def attaquer_joueur(self):
-        # Logique d'attaque du joueur
-        self.adversaire_vie -= 10
-        self.joueur_animation.changer_animation('img/IPI_attaque', 30)  # Changer l'animation pour l'attaque pendant 30 frames
-        if self.adversaire_vie <= 0:
-            self.combat_termine = True
+        # Vérifier si l'animation d'attaque précédente est terminée
+        if self.joueur_animation.animation_temporaire is None:
+            # Vérifier la collision avec l'adversaire
+            if self.joueur_animation.x < self.adversaire_animation.x + self.adversaire_animation.taille[0] and \
+               self.joueur_animation.x + self.joueur_animation.taille[0] > self.adversaire_animation.x and \
+               self.joueur_animation.y < self.adversaire_animation.y + self.adversaire_animation.taille[1] and \
+               self.joueur_animation.y + self.joueur_animation.taille[1] > self.adversaire_animation.y:
+                # Logique d'attaque du joueur
+                self.adversaire_vie -= 10
+            self.joueur_animation.changer_animation('img/IPI_attaque', 30)  # Changer l'animation pour l'attaque pendant 30 frames
+            if self.adversaire_vie <= 0:
+                self.combat_termine = True
 
     def attaquer_adversaire(self):
-        # Logique d'attaque de l'adversaire
-        self.joueur_vie -= 10
-        self.adversaire_animation.changer_animation('img/IPI attaque katana', 30)  # Changer l'animation pour l'attaque pendant 30 frames
-        if self.joueur_vie <= 0:
-            self.combat_termine = True
+        # Vérifier si l'animation d'attaque précédente est terminée
+        if self.adversaire_animation.animation_temporaire is None:
+            # Logique d'attaque de l'adversaire
+            self.joueur_vie -= 10
+            self.adversaire_animation.changer_animation('img/IPI attaque katana', 30)  # Changer l'animation pour l'attaque pendant 30 frames
+            if self.joueur_vie <= 0:
+                self.combat_termine = True
 
     def defendre_joueur(self):
         # Logique de défense du joueur
