@@ -186,25 +186,59 @@ class CombatSystem:
     def attaquer_joueur(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.joueur_animation.animation_temporaire is None:
-            # Vérifier la collision avec l'adversaire
-            if self.joueur_animation.x < self.adversaire_animation.x + self.adversaire_animation.taille[0] and \
-               self.joueur_animation.x + self.joueur_animation.taille[0] > self.adversaire_animation.x and \
-               self.joueur_animation.y < self.adversaire_animation.y + self.adversaire_animation.taille[1] and \
-               self.joueur_animation.y + self.joueur_animation.taille[1] > self.adversaire_animation.y:
-                # Logique d'attaque du joueur
-                self.adversaire_vie -= 10
-            self.joueur_animation.changer_animation('img/IPI_attaque', 30)  # Changer l'animation pour l'attaque pendant 30 frames
-            if self.adversaire_vie <= 0:
-                self.combat_termine = True
+            # Changer l'animation pour l'attaque pendant 30 frames
+            self.joueur_animation.changer_animation('img/IPI_attaque', 30)
 
     def attaquer_adversaire(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.adversaire_animation.animation_temporaire is None:
-            # Logique d'attaque de l'adversaire
-            self.joueur_vie -= 10
-            self.adversaire_animation.changer_animation('img/IPI attaque katana', 30)  # Changer l'animation pour l'attaque pendant 30 frames
-            if self.joueur_vie <= 0:
-                self.combat_termine = True
+            # Changer l'animation pour l'attaque pendant 30 frames
+            self.adversaire_animation.changer_animation('img/IPI attaque katana', 30)
+
+    def mettre_a_jour(self):
+        # Vérifier si l'animation d'attaque du joueur est terminée
+        if self.joueur_animation.animation_temporaire is not None:
+            self.joueur_animation.animation_temporaire_duree -= 1
+            if self.joueur_animation.animation_temporaire_duree <= 0:
+                joueur_hitbox = pygame.Rect(
+                    self.joueur_animation.x + self.joueur_animation.taille[0] * 0.35,  # Augmenter légèrement la largeur de la hitbox
+                    self.joueur_animation.y + self.joueur_animation.taille[1] * 0.1,  # Augmenter légèrement la hauteur de la hitbox
+                    self.joueur_animation.taille[0] * 0.22,  # Augmenter légèrement la largeur de la hitbox
+                    self.joueur_animation.taille[1] * 0.62  # Augmenter légèrement la hauteur de la hitbox
+                )
+                adversaire_hitbox = pygame.Rect(
+                    self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,  # Réduire la largeur de la hitbox
+                    self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,  # Réduire la hauteur de la hitbox
+                    self.adversaire_animation.taille[0] * 0.2,  # Réduire la largeur de la hitbox
+                    self.adversaire_animation.taille[1] * 0.6  # Réduire la hauteur de la hitbox
+                )
+                if joueur_hitbox.colliderect(adversaire_hitbox):
+                    self.adversaire_vie -= 10
+                    if self.adversaire_vie <= 0:
+                        self.combat_termine = True
+                self.joueur_animation.animation_temporaire = None  # Réinitialiser l'animation temporaire
+
+        # Vérifier si l'animation d'attaque de l'adversaire est terminée
+        if self.adversaire_animation.animation_temporaire is not None:
+            self.adversaire_animation.animation_temporaire_duree -= 1
+            if self.adversaire_animation.animation_temporaire_duree <= 0:
+                joueur_hitbox = pygame.Rect(
+                    self.joueur_animation.x + self.joueur_animation.taille[0] * 0.35,  # Augmenter légèrement la largeur de la hitbox
+                    self.joueur_animation.y + self.joueur_animation.taille[1] * 0.1,  # Augmenter légèrement la hauteur de la hitbox
+                    self.joueur_animation.taille[0] * 0.3,  # Augmenter légèrement la largeur de la hitbox
+                    self.joueur_animation.taille[1] * 0.8  # Augmenter légèrement la hauteur de la hitbox
+                )
+                adversaire_hitbox = pygame.Rect(
+                    self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,  # Réduire la largeur de la hitbox
+                    self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,  # Réduire la hauteur de la hitbox
+                    self.adversaire_animation.taille[0] * 0.2,  # Réduire la largeur de la hitbox
+                    self.adversaire_animation.taille[1] * 0.6  # Réduire la hauteur de la hitbox
+                )
+                if adversaire_hitbox.colliderect(joueur_hitbox):
+                    self.joueur_vie -= 10
+                    if self.joueur_vie <= 0:
+                        self.combat_termine = True
+                self.adversaire_animation.animation_temporaire = None  # Réinitialiser l'animation temporaire
 
     def defendre_joueur(self):
         # Logique de défense du joueur
@@ -217,10 +251,6 @@ class CombatSystem:
         self.adversaire_vie -= 5
         if self.adversaire_vie <= 0:
             self.combat_termine = True
-
-    def mettre_a_jour(self):
-        # Mettre à jour l'état du combat
-        pass
 
     def dessiner(self, surface):
         # Dessiner les éléments du combat
