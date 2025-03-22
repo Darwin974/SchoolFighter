@@ -264,45 +264,81 @@ class EcranJeu:
     def __init__(self):
         self.fond_animation = AnimationLoop(image_loader, 'img/IPI_fond_chill', (700, 700), 0, 0)
         self.debut_combat_animation = AnimationSprite(image_loader, 'img/IPI_fight', (700, 700))
-        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), 100, 200, appliquer_gravite=True)  # Position initiale ajustée
-        self.adversaire_animation = AnimationLoop(image_loader, 'img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)  # Position initiale ajustée
+        
+        # Positionner le joueur contrôlé par les flèches à gauche
+        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
+        
+        # Positionner le joueur contrôlé par zqsd à droite
+        self.adversaire_animation = AnimationLoop(image_loader, 'img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
+        
         self.debut_combat_termine = False
         self.combat_system = CombatSystem(self.joueur_animation, self.adversaire_animation)
+        
+        # Animation de victoire
+        self.victoire_animation = None
+
+    def reinitialiser(self):
+        # Réinitialiser les animations des joueurs
+        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
+        self.adversaire_animation = AnimationLoop(image_loader, 'img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
+        
+        # Réinitialiser le système de combat
+        self.combat_system = CombatSystem(self.joueur_animation, self.adversaire_animation)
+        
+        # Réinitialiser l'état du combat
+        self.debut_combat_termine = False
+        self.debut_combat_animation = AnimationSprite(image_loader, 'img/IPI_fight', (700, 700))
+        
+        # Réinitialiser l'animation de victoire
+        self.victoire_animation = None
 
     def gerer_evenements(self, evenement):
+        # Permettre de retourner au menu même si le combat est terminé
         if evenement.type == pygame.KEYDOWN:
             if evenement.key == pygame.K_ESCAPE:
                 return 'menu'  # Retourner au menu
-            elif evenement.key == pygame.K_SPACE:
+
+            # Empêcher les personnages de bouger si le combat est terminé
+            if self.victoire_animation is not None:
+                return 'jeu'
+
+            # Gestion des autres touches
+            if evenement.key == pygame.K_a:  # Attaque pour le joueur contrôlé par les flèches
                 self.combat_system.attaquer_joueur()
-            elif evenement.key == pygame.K_LSHIFT:
-                self.combat_system.defendre_joueur()
-            elif evenement.key == pygame.K_LEFT:
+            elif evenement.key == pygame.K_q:
                 self.joueur_animation.vitesse_x = -5
                 self.joueur_animation.direction = 'left'
-            elif evenement.key == pygame.K_RIGHT:
+            elif evenement.key == pygame.K_d:
                 self.joueur_animation.vitesse_x = 5
                 self.joueur_animation.direction = 'right'
-            elif evenement.key == pygame.K_UP and not self.joueur_animation.en_air:
+            elif evenement.key == pygame.K_z and not self.joueur_animation.en_air:
                 self.joueur_animation.vitesse_y = -10  # Sauter
-            elif evenement.key == pygame.K_a:
+            elif evenement.key == pygame.K_SPACE:  # Attaque pour le joueur contrôlé par zqsd
                 self.combat_system.attaquer_adversaire()
-            elif evenement.key == pygame.K_q:
+            elif evenement.key == pygame.K_LEFT:
                 self.adversaire_animation.vitesse_x = -5
                 self.adversaire_animation.direction = 'left'
-            elif evenement.key == pygame.K_d:
+            elif evenement.key == pygame.K_RIGHT:
                 self.adversaire_animation.vitesse_x = 5
                 self.adversaire_animation.direction = 'right'
-            elif evenement.key == pygame.K_z and not self.adversaire_animation.en_air:
+            elif evenement.key == pygame.K_UP and not self.adversaire_animation.en_air:
                 self.adversaire_animation.vitesse_y = -10  # Sauter
         elif evenement.type == pygame.KEYUP:
-            if evenement.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+            if evenement.key in [pygame.K_q, pygame.K_d]:
                 self.joueur_animation.vitesse_x = 0
-            elif evenement.key in [pygame.K_q, pygame.K_d]:
+            elif evenement.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 self.adversaire_animation.vitesse_x = 0
         return 'jeu'
 
     def mettre_a_jour(self):
+        # Vérifier si le combat est terminé
+        if self.combat_system.joueur_vie <= 0 and self.victoire_animation is None:
+            self.victoire_animation = AnimationSprite(image_loader, 'img/IPI2win', (700, 700))  # Adversaire gagne
+            return
+        elif self.combat_system.adversaire_vie <= 0 and self.victoire_animation is None:
+            self.victoire_animation = AnimationSprite(image_loader, 'img/IPI1win', (700, 700))  # Joueur gagne
+            return
+
         self.fond_animation.mettre_a_jour()
         if not self.debut_combat_termine:
             self.debut_combat_animation.mettre_a_jour()
@@ -313,6 +349,10 @@ class EcranJeu:
             self.adversaire_animation.mettre_a_jour()
             self.combat_system.mettre_a_jour()
 
+        # Mettre à jour l'animation de victoire si elle existe
+        if self.victoire_animation is not None:
+            self.victoire_animation.mettre_a_jour()
+
     def dessiner(self, surface):
         surface.fill((0, 0, 0))
         self.fond_animation.dessiner(surface)
@@ -322,6 +362,10 @@ class EcranJeu:
             self.joueur_animation.dessiner(surface)
             self.adversaire_animation.dessiner(surface)
             self.combat_system.dessiner(surface)
+
+        # Dessiner l'animation de victoire si le combat est terminé
+        if self.victoire_animation is not None:
+            self.victoire_animation.dessiner(surface, 0, 0)  # Afficher à (0, 0)
 
 # Initialiser les écrans
 ecrans = {
@@ -341,6 +385,8 @@ while en_cours:
         # Gérer les événements de l'écran actuel
         nouvel_ecran = ecrans[ecran_actuel].gerer_evenements(evenement)
         if nouvel_ecran != ecran_actuel:
+            if nouvel_ecran == 'jeu':  # Si on retourne à l'écran de jeu
+                ecrans['jeu'].reinitialiser()  # Réinitialiser l'écran de jeu
             ecran_actuel = nouvel_ecran
 
     # Mettre à jour l'écran actuel
