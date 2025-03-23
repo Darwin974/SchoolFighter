@@ -144,12 +144,12 @@ class EcranMenu:
         # Positionner le logo au centre de la fenêtre
         logo_x = (700 - 640) // 2
         logo_y = (700 - 426) // 2
-        self.logo_animation = AnimationLoop(image_loader, 'img/IPI_logo', (640, 420), logo_x, logo_y)  # Chemin, taille et position du logo
+        self.logo_animation = AnimationLoop(image_loader, 'data/img/IPI_logo', (640, 420), logo_x, logo_y)  # Chemin, taille et position du logo
         # Ajouter une animation de fond
-        self.fond_animation = AnimationLoop(image_loader, 'img/IPI_TerrainSchrauder', (700, 700), 0, 0)  # Chemin, taille et position du fond
+        self.fond_animation = AnimationLoop(image_loader, 'data/img/IPI_TerrainSchrauder', (700, 700), 0, 0)  # Chemin, taille et position du fond
         self.buttons = [
-            Button(250, 435, 200, 100, 'img/IPI start', 'jeu'),
-            Button(250, 535, 200, 100, 'img/IPI quit', 'exit')
+            Button(250, 435, 200, 100, 'data/img/IPI start', 'jeu'),
+            Button(250, 535, 200, 100, 'data/img/IPI quit', 'exit')
         ]
 
     def gerer_evenements(self, evenement):
@@ -187,13 +187,13 @@ class CombatSystem:
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.joueur_animation.animation_temporaire is None:
             # Changer l'animation pour l'attaque pendant 30 frames
-            self.joueur_animation.changer_animation('img/IPI_attaque', 30)
+            self.joueur_animation.changer_animation('data/img/IPI_attaque', 30)
 
     def attaquer_adversaire(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.adversaire_animation.animation_temporaire is None:
             # Changer l'animation pour l'attaque pendant 30 frames
-            self.adversaire_animation.changer_animation('img/IPI attaque katana', 30)
+            self.adversaire_animation.changer_animation('data/img/IPI attaque katana', 30)
 
     def mettre_a_jour(self):
         # Vérifier si l'animation d'attaque du joueur est terminée
@@ -253,23 +253,27 @@ class CombatSystem:
             self.combat_termine = True
 
     def dessiner(self, surface):
-        # Dessiner les éléments du combat
+        # Dessiner les points de vie des joueurs
         font = pygame.font.Font(None, 36)
-        joueur_vie_text = font.render(f'Joueur Vie: {self.joueur_vie}', True, (255, 255, 255))
-        adversaire_vie_text = font.render(f'Adversaire Vie: {self.adversaire_vie}', True, (255, 255, 255))
-        surface.blit(joueur_vie_text, (10, 10))
-        surface.blit(adversaire_vie_text, (10, 50))
+        
+        # Texte pour le joueur 1 (à gauche)
+        joueur_vie_text = font.render(f'J1 pv : {self.joueur_vie}', True, (255, 255, 255))
+        surface.blit(joueur_vie_text, (10, 10))  # Position en haut à gauche
+        
+        # Texte pour le joueur 2 (à droite)
+        adversaire_vie_text = font.render(f'J2 pv : {self.adversaire_vie}', True, (255, 255, 255))
+        surface.blit(adversaire_vie_text, (700 - adversaire_vie_text.get_width() - 10, 10))  # Position en haut à droite
 
 class EcranJeu:
     def __init__(self):
-        self.fond_animation = AnimationLoop(image_loader, 'img/IPI_fond_chill', (700, 700), 0, 0)
-        self.debut_combat_animation = AnimationSprite(image_loader, 'img/IPI_fight', (700, 700))
+        self.fond_animation = AnimationLoop(image_loader, 'data/img/IPI_fond_chill', (700, 700), 0, 0)
+        self.debut_combat_animation = AnimationSprite(image_loader, 'data/img/IPI_fight', (700, 700))
         
         # Positionner le joueur contrôlé par les flèches à gauche
-        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
+        self.joueur_animation = AnimationLoop(image_loader, 'data/img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
         
         # Positionner le joueur contrôlé par zqsd à droite
-        self.adversaire_animation = AnimationLoop(image_loader, 'img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
+        self.adversaire_animation = AnimationLoop(image_loader, 'data/img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
         
         self.debut_combat_termine = False
         self.combat_system = CombatSystem(self.joueur_animation, self.adversaire_animation)
@@ -279,15 +283,15 @@ class EcranJeu:
 
     def reinitialiser(self):
         # Réinitialiser les animations des joueurs
-        self.joueur_animation = AnimationLoop(image_loader, 'img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
-        self.adversaire_animation = AnimationLoop(image_loader, 'img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
+        self.joueur_animation = AnimationLoop(image_loader, 'data/img/IPI_Basic', (500, 500), -100, 300, appliquer_gravite=True)
+        self.adversaire_animation = AnimationLoop(image_loader, 'data/img/IPI Basic Katana', (500, 500), 300, 200, appliquer_gravite=True)
         
         # Réinitialiser le système de combat
         self.combat_system = CombatSystem(self.joueur_animation, self.adversaire_animation)
         
         # Réinitialiser l'état du combat
         self.debut_combat_termine = False
-        self.debut_combat_animation = AnimationSprite(image_loader, 'img/IPI_fight', (700, 700))
+        self.debut_combat_animation = AnimationSprite(image_loader, 'data/img/IPI_fight', (700, 700))
         
         # Réinitialiser l'animation de victoire
         self.victoire_animation = None
@@ -333,7 +337,7 @@ class EcranJeu:
     def mettre_a_jour(self):
         # Vérifier si le combat est terminé
         if self.combat_system.joueur_vie <= 0 and self.victoire_animation is None:
-            self.victoire_animation = AnimationSprite(image_loader, 'img/IPI2win', (700, 700))  # Adversaire gagne
+            self.victoire_animation = AnimationSprite(image_loader, 'data/img/IPI2win', (700, 700))  # Adversaire gagne
             return
         elif self.combat_system.adversaire_vie <= 0 and self.victoire_animation is None:
             self.victoire_animation = AnimationSprite(image_loader, 'img/IPI1win', (700, 700))  # Joueur gagne
