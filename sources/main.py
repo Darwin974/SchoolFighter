@@ -226,8 +226,12 @@ class CombatSystem:
     def attaquer_adversaire(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.adversaire_animation.animation_temporaire is None:
-            # Changer l'animation pour l'attaque pendant 30 frames
-            self.adversaire_animation.changer_animation('data/img/IPI attaque katana', 30)
+            # Si le joueur 2 est Schrauder (mode secret), utiliser son animation d'attaque spécifique
+            if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
+                self.adversaire_animation.changer_animation('data/img/IPIShrauderAttaque', 30)
+            else:
+                # Sinon, utiliser l'animation d'attaque par défaut
+                self.adversaire_animation.changer_animation('data/img/IPI attaque katana', 30)
 
     def mettre_a_jour(self):
         # Vérifier si l'animation d'attaque du joueur est terminée
