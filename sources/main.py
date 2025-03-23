@@ -37,7 +37,7 @@ class AnimationLoop:
         self.taille = taille
         self.images = image_loader.charger_images(dossier, taille)
         self.sprite_actuel = 0
-        self.vitesse_sprite = 0.2
+        self.vitesse_sprite = 0.18
         self.x = x
         self.y = y
         self.vitesse_x = 0
@@ -220,18 +220,18 @@ class CombatSystem:
     def attaquer_joueur(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.joueur_animation.animation_temporaire is None:
-            # Changer l'animation pour l'attaque pendant 30 frames
-            self.joueur_animation.changer_animation('data/img/IPI_attaque', 30)
+            # Changer l'animation pour l'attaque pendant 80 frames
+            self.joueur_animation.changer_animation('data/img/IPI_attaque', 80)
 
     def attaquer_adversaire(self):
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.adversaire_animation.animation_temporaire is None:
             # Si le joueur 2 est Schrauder (mode secret), utiliser son animation d'attaque spécifique
             if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
-                self.adversaire_animation.changer_animation('data/img/IPIShrauderAttaque', 30)
+                self.adversaire_animation.changer_animation('data/img/IPIShrauderAttaque', 100)  # 100 frames pour le mode secret
             else:
                 # Sinon, utiliser l'animation d'attaque par défaut
-                self.adversaire_animation.changer_animation('data/img/IPI attaque katana', 30)
+                self.adversaire_animation.changer_animation('data/img/IPI attaque katana', 120)  # 120 frames pour le mode normal
 
     def mettre_a_jour(self):
         # Vérifier si l'animation d'attaque du joueur est terminée
@@ -244,12 +244,23 @@ class CombatSystem:
                     self.joueur_animation.taille[0] * 0.22,
                     self.joueur_animation.taille[1] * 0.62
                 )
-                adversaire_hitbox = pygame.Rect(
-                    self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,
-                    self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,
-                    self.adversaire_animation.taille[0] * 0.2,
-                    self.adversaire_animation.taille[1] * 0.6
-                )
+                # Calculer la hitbox de l'adversaire
+                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':  # Mode secret
+                    adversaire_hitbox = pygame.Rect(
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.2,
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.1,
+                        self.adversaire_animation.taille[0] * 0.4,  # Largeur doublée
+                        self.adversaire_animation.taille[1] * 1.2   # Hauteur doublée
+                    )
+                else:  # Mode normal
+                    adversaire_hitbox = pygame.Rect(
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,
+                        self.adversaire_animation.taille[0] * 0.2,
+                        self.adversaire_animation.taille[1] * 0.6
+                    )
+
+                # Vérifier la collision entre les hitboxes
                 if joueur_hitbox.colliderect(adversaire_hitbox):
                     self.adversaire_vie -= 10
                     self.explosion_sound.play()  # Jouer le son de dégâts
@@ -267,19 +278,23 @@ class CombatSystem:
                     self.joueur_animation.taille[0] * 0.3,
                     self.joueur_animation.taille[1] * 0.8
                 )
-                adversaire_hitbox = pygame.Rect(
-                    self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,
-                    self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,
-                    self.adversaire_animation.taille[0] * 0.2,
-                    self.adversaire_animation.taille[1] * 0.6
-                )
-                # Vérifiez si Schrauder est en train d'attaquer
-                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic' and \
-                   self.adversaire_animation.animation_temporaire == self.adversaire_animation.image_loader.charger_images('data/img/IPI_shrauderMarche', self.adversaire_animation.taille):
-                    # Ne pas infliger de dégâts si Schrauder marche
-                    self.adversaire_animation.animation_temporaire = None
-                    return
+                # Calculer la hitbox de l'adversaire
+                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':  # Mode secret
+                    adversaire_hitbox = pygame.Rect(
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.2,
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.1,
+                        self.adversaire_animation.taille[0] * 0.4,  # Largeur doublée
+                        self.adversaire_animation.taille[1] * 1.2   # Hauteur doublée
+                    )
+                else:  # Mode normal
+                    adversaire_hitbox = pygame.Rect(
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.4,
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.2,
+                        self.adversaire_animation.taille[0] * 0.2,
+                        self.adversaire_animation.taille[1] * 0.6
+                    )
 
+                # Vérifier la collision entre les hitboxes
                 if adversaire_hitbox.colliderect(joueur_hitbox):
                     self.joueur_vie -= 10
                     self.explosion_sound.play()  # Jouer le son de dégâts
