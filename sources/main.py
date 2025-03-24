@@ -227,7 +227,7 @@ class CombatSystem:
         # Vérifier si l'animation d'attaque précédente est terminée
         if self.adversaire_animation.animation_temporaire is None:
             # Si le joueur 2 est Schrauder (mode secret), utiliser son animation d'attaque spécifique
-            if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
+            if self.adversaire_animation.dossier == 'data/img/IPI_shrauderMarche':  # Mode secret
                 self.adversaire_animation.changer_animation('data/img/IPIShrauderAttaque', 100)  # 100 frames pour le mode secret
             else:
                 # Sinon, utiliser l'animation d'attaque par défaut
@@ -245,12 +245,12 @@ class CombatSystem:
                     self.joueur_animation.taille[1] * 0.62
                 )
                 # Calculer la hitbox de l'adversaire
-                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':  # Mode secret
+                if self.adversaire_animation.dossier == 'data/img/IPI_shrauderMarche':  # Mode secret
                     adversaire_hitbox = pygame.Rect(
-                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.2,
-                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.1,
-                        self.adversaire_animation.taille[0] * 0.4,  # Largeur doublée
-                        self.adversaire_animation.taille[1] * 1.2   # Hauteur doublée
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.15,  # Réduit le décalage
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.05,  # Réduit le décalage
+                        self.adversaire_animation.taille[0] * 0.5,  # Largeur augmentée
+                        self.adversaire_animation.taille[1] * 1.3   # Hauteur augmentée
                     )
                 else:  # Mode normal
                     adversaire_hitbox = pygame.Rect(
@@ -279,12 +279,12 @@ class CombatSystem:
                     self.joueur_animation.taille[1] * 0.8
                 )
                 # Calculer la hitbox de l'adversaire
-                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':  # Mode secret
+                if self.adversaire_animation.dossier == 'data/img/IPI_shrauderMarche':  # Mode secret
                     adversaire_hitbox = pygame.Rect(
-                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.2,
-                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.1,
-                        self.adversaire_animation.taille[0] * 0.4,  # Largeur doublée
-                        self.adversaire_animation.taille[1] * 1.2   # Hauteur doublée
+                        self.adversaire_animation.x + self.adversaire_animation.taille[0] * 0.15,  # Réduit le décalage
+                        self.adversaire_animation.y + self.adversaire_animation.taille[1] * 0.05,
+                        self.adversaire_animation.taille[0] * 0.5,  # Largeur augmentée
+                        self.adversaire_animation.taille[1] * 1.3   # Hauteur augmentée
                     )
                 else:  # Mode normal
                     adversaire_hitbox = pygame.Rect(
@@ -353,7 +353,7 @@ class EcranJeu:
         
         if secret_mode:
             # Mode secret : joueur 2 avec Schrauder
-            self.adversaire_animation = AnimationLoop(image_loader, 'data/img/IPI shrauder basic', (500, 500), 300, 200, appliquer_gravite=True)
+            self.adversaire_animation = AnimationLoop(image_loader, 'data/img/IPI_shrauderMarche', (500, 500), 300, 200, appliquer_gravite=True)  # Animation de base
             self.combat_system = CombatSystem(self.joueur_animation, self.adversaire_animation)
             self.combat_system.adversaire_vie = 300  # Donner 300 PV au joueur 2
             self.fond_animation = AnimationLoop(image_loader, 'data/img/IPI_TerrainSchrauder', (700, 700), 0, 0)
@@ -413,15 +413,12 @@ class EcranJeu:
             elif evenement.key == pygame.K_LEFT:
                 self.adversaire_animation.vitesse_x = -5
                 self.adversaire_animation.direction = 'left'
-                # Si Schrauder marche, changer l'animation
+# Si Schrauder marche, changer l'animation
                 if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
                     self.adversaire_animation.changer_animation('data/img/IPI_shrauderMarche', 30)
             elif evenement.key == pygame.K_RIGHT:
                 self.adversaire_animation.vitesse_x = 5
                 self.adversaire_animation.direction = 'right'
-                # Si Schrauder marche, changer l'animation
-                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
-                    self.adversaire_animation.changer_animation('data/img/IPI_shrauderMarche', 30)
             elif evenement.key == pygame.K_UP and not self.adversaire_animation.en_air:
                 self.adversaire_animation.vitesse_y = -10  # Sauter
         elif evenement.type == pygame.KEYUP:
@@ -429,9 +426,6 @@ class EcranJeu:
                 self.joueur_animation.vitesse_x = 0
             elif evenement.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 self.adversaire_animation.vitesse_x = 0
-                # Réinitialiser l'animation de Schrauder lorsqu'il s'arrête
-                if self.adversaire_animation.dossier == 'data/img/IPI shrauder basic':
-                    self.adversaire_animation.changer_animation('data/img/IPI shrauder basic', 30)
         return 'jeu'
 
     def mettre_a_jour(self):
